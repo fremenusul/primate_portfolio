@@ -13,14 +13,10 @@ from tiingo import TiingoClient
 # When deployed to Cloud Functions, it uses the default service account automatically.
 db = firestore.Client(project=os.environ.get('GCP_PROJECT', 'primateportfolio'))
 
-TIINGO_API_KEY = os.environ.get('TIINGO_API_KEY')
-if not TIINGO_API_KEY:
-    print("WARNING: TIINGO_API_KEY environment variable not set.")
-
 def get_tiingo_client():
     config = {}
     config['session'] = True
-    config['api_key'] = TIINGO_API_KEY
+    config['api_key'] = os.environ.get('TIINGO_API_KEY')
     return TiingoClient(config)
 
 def download_supported_tickers():
@@ -29,18 +25,20 @@ def download_supported_tickers():
     data = client.list_stock_tickers()
     
     tickers = []
+    supported_exchanges = {'NYSE', 'NASDAQ', 'AMEX', 'ARCA', 'BATS'}
     for item in data:
         if isinstance(item, dict) and item.get('assetType') == 'Stock' and item.get('startDate') and item.get('endDate'):
-            tickers.append(item.get('ticker'))
+            if item.get('exchange', '').upper() in supported_exchanges:
+                tickers.append(item.get('ticker'))
     return tickers
 
 @functions_framework.http
 def generate_pick(request):
     """
     Cloud Function to generate a daily pick.
-    Triggered daily at 9:00 AM EST.
+    Triggered daily at 6:05 AM PST.
     """
-    if not TIINGO_API_KEY:
+    if not os.environ.get('TIINGO_API_KEY'):
         return ("TIINGO_API_KEY not set", 500)
         
     try:
@@ -51,6 +49,13 @@ def generate_pick(request):
         pick = random.choice(tickers)
         print(f"Today's Monkey Pick is: {pick}")
         
+        # Fetch the morning price
+        client = get_tiingo_client()
+        pricing = client.get_ticker_price(pick)
+        pick_price = None
+        if pricing:
+            pick_price = pricing[0].get('close')
+        
         today_str = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
         
         # Store in Firestore
@@ -58,9 +63,10 @@ def generate_pick(request):
         doc_ref.set({
             'ticker': pick,
             'pick_date': today_str,
-            'pick_price': None, # Will be filled by EOD function
-            'current_price': None,
+            'pick_price': pick_price,
+            'current_price': pick_price,
             'total_return_pct': 0.0,
+            'history': [{'date': today_str, 'return_pct': 0.0}],
             'created_at': firestore.SERVER_TIMESTAMP
         })
         
@@ -75,7 +81,7 @@ def update_performance(request):
     Cloud Function to update the performance of all past picks.
     Triggered daily at 6:00 PM EST.
     """
-    if not TIINGO_API_KEY:
+    if not os.environ.get('TIINGO_API_KEY'):
          return ("TIINGO_API_KEY not set", 500)
          
     try:
@@ -116,10 +122,15 @@ def update_performance(request):
                     current_pick_price = latest_price
                 
                 # Calculate ROI
+                roi_pct = 0.0
                 if current_pick_price and current_pick_price > 0:
                      roi_pct = ((latest_price - current_pick_price) / current_pick_price) * 100
                      update_data['total_return_pct'] = roi_pct
                 
+                # Append to history array
+                today_str = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+                update_data['history'] = firestore.ArrayUnion([{'date': today_str, 'return_pct': roi_pct}])
+
                 doc.reference.update(update_data)
                 updated_count += 1
                 

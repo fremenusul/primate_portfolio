@@ -1,10 +1,12 @@
 # Environments
 .env
-.env.*
+.env
 .venv
 env/
 venv/
 ENV/
+*.txt
+*.json
 env.bak/
 venv.bak/
 
