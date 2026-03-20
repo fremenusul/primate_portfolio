@@ -1,0 +1,23 @@
+# Environments
+.env
+.env.*
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+backend_logs.txt
+*.log
+
+# Cloud credentials
+*-auth.json
+*.json
+!requirements.txt
