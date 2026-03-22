@@ -78,7 +78,7 @@ function App() {
             The Monkey Index
           </h1>
           <p className="text-lg text-indigo-200/80 max-w-xl font-light">
-            Can a monkey throwing darts consistently beat Wall Street? Track the results of a completely random daily stock selection.
+            Can a monkey <a href="https://www.bayes.citystgeorges.ac.uk/__data/assets/pdf_file/0005/168827/Monkeys-beat-market-cap-indices_Final030413.pdf" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 underline font-medium">throwing darts</a> consistently beat Wall Street? Track the results of a completely random daily stock selection.
           </p>
         </header>
 
@@ -112,11 +112,10 @@ function App() {
                   ${todayPick.ticker}
                 </a>
                 <div className="flex flex-col items-start gap-3 mt-2">
-                  <span className="text-sm text-indigo-200/70">Picked on: {todayPick.pick_date}</span>
-                  {todayPick.pick_price !== null && (
+                  {todayPick.pick_date && (
                      <div className="px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-300 font-semibold shadow-sm flex items-center gap-2">
-                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                       Morning Price: ${todayPick.pick_price.toFixed(2)}
+                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                       Pick Date: {todayPick.pick_date}
                      </div>
                   )}
                 </div>
