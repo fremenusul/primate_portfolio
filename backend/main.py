@@ -165,7 +165,7 @@ def get_picks_api(request):
             picks.append(pick_data)
             
         headers = {
-            'Cache-Control': 'public, max-age=3600, s-maxage=14400',
+            'Cache-Control': 'public, max-age=300, s-maxage=300',
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
         }
