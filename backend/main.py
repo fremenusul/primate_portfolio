@@ -8,6 +8,7 @@ import requests
 import functions_framework
 from google.cloud import firestore
 from tiingo import TiingoClient
+import yfinance as yf
 
 # Initialize Firestore DB
 # When deployed to Cloud Functions, it uses the default service account automatically.
@@ -25,7 +26,7 @@ def download_supported_tickers():
     data = client.list_stock_tickers()
     
     tickers = []
-    supported_exchanges = {'NYSE', 'NASDAQ', 'AMEX', 'ARCA', 'BATS'}
+    supported_exchanges = {'NYSE', 'NASDAQ', 'AMEX'}
     for item in data:
         if isinstance(item, dict) and item.get('assetType') == 'Stock' and item.get('startDate') and item.get('endDate'):
             if item.get('exchange', '').upper() in supported_exchanges:
@@ -46,7 +47,27 @@ def generate_pick(request):
         if not tickers:
             return ("Failed to fetch tickers", 500)
             
-        pick = random.choice(tickers)
+        # Fetch past picks to ensure we don't repeat them
+        past_picks_ref = db.collection('daily_picks').stream()
+        past_picks = {doc.to_dict().get('ticker') for doc in past_picks_ref if doc.to_dict().get('ticker')}
+        
+        pick = None
+        for _ in range(50):
+            candidate = random.choice(tickers)
+            if candidate in past_picks:
+                continue
+                
+            try:
+                hist = yf.Ticker(candidate).history(period="1d")
+                if not hist.empty and len(hist) > 0:
+                    pick = candidate
+                    break
+            except Exception:
+                pass
+                
+        if not pick:
+            return ("Failed to find a valid Yahoo Finance ticker", 500)
+            
         print(f"Today's Monkey Pick is: {pick}")
         
         # Fetch the morning price
