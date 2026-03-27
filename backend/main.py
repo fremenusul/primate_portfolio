@@ -51,6 +51,8 @@ def generate_pick(request):
         past_picks_ref = db.collection('daily_picks').stream()
         past_picks = {doc.to_dict().get('ticker') for doc in past_picks_ref if doc.to_dict().get('ticker')}
         
+        client = get_tiingo_client()
+        
         pick = None
         for _ in range(50):
             candidate = random.choice(tickers)
@@ -60,18 +62,20 @@ def generate_pick(request):
             try:
                 hist = yf.Ticker(candidate).history(period="1d")
                 if not hist.empty and len(hist) > 0:
-                    pick = candidate
-                    break
+                    # Verify Tiingo actually has a price for it right now
+                    pricing = client.get_ticker_price(candidate)
+                    if pricing and len(pricing) > 0 and pricing[0].get('close') is not None:
+                        pick = candidate
+                        break
             except Exception:
                 pass
                 
         if not pick:
-            return ("Failed to find a valid Yahoo Finance ticker", 500)
+            return ("Failed to find a valid stock pick with price data", 500)
             
         print(f"Today's Monkey Pick is: {pick}")
         
         # Fetch the morning price
-        client = get_tiingo_client()
         pricing = client.get_ticker_price(pick)
         pick_price = None
         if pricing:

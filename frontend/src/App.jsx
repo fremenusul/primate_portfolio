@@ -1,6 +1,58 @@
 import React, { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Info, BarChart3, TrendingUp, Dna, Calculator } from 'lucide-react';
 import heroImg from './assets/monkey_hero_v2.png';
+
+const Methodology = () => (
+  <div className="space-y-8 animate-in fade-in duration-500 max-w-4xl mx-auto mt-8">
+    <section className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="relative z-10">
+        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+          <Dna className="w-6 h-6 text-indigo-400" />
+          The "Random" Perspective
+        </h2>
+        <div className="space-y-4 text-indigo-100/80 leading-relaxed font-light">
+          <p>
+            The Monkey Index simulates the classic "monkey throwing darts" experiment by generating a completely random stock pick every single day.
+          </p>
+          <p>
+            At 6:05 AM PST, our logic fetches a comprehensive list of all active stocks trading on major US exchanges (NYSE, NASDAQ, AMEX). From this pool—numbering in the thousands—a single ticker is selected uniformly at random.
+          </p>
+          <p>
+            By strictly avoiding duplication (no ticker is picked twice), the portfolio naturally diversifies across completely arbitrary sectors, market caps, and volatility profiles, building a bizarre, unbiased, and completely blind index over time.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="relative z-10">
+        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+          <Calculator className="w-6 h-6 text-purple-400" />
+          Calculating the Overall Return
+        </h2>
+        <div className="space-y-4 text-indigo-100/80 leading-relaxed font-light">
+          <p>
+            The "Overall Return" metric tracks the time-weighted performance of this randomized fund. We assume you invest an <strong className="text-white font-medium">equal dollar amount</strong> into every daily pick exactly at its morning open price.
+          </p>
+          <p>
+            Because the portfolio expands each day with a fresh, equal-sized investment, your overall ROI cleanly converges to the <strong className="text-white font-medium">arithmetic average</strong> of all individual percentage returns. 
+          </p>
+          <div className="bg-black/20 rounded-xl p-5 border border-white/5 mt-4 group-hover:border-indigo-500/30 transition-colors">
+             <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-widest mb-3 flex items-center gap-2">
+               <TrendingUp className="w-4 h-4" /> Why it might look "Low"
+             </h3>
+             <p className="text-sm">
+               If your first pick gains 15%, but your most recent pick has only been open for one hour and sits at 0%, the 15% winner is structurally diluted across your entire expanding portfolio. In a time-weighted, equally funded index, wild daily gains are systematically muted by the sheer volume of fresh zero-return entries!
+             </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+);
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -20,6 +72,7 @@ function App() {
   const [picks, setPicks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedRowId, setExpandedRowId] = useState(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   const toggleRow = (id) => {
     setExpandedRowId(expandedRowId === id ? null : id);
@@ -80,8 +133,27 @@ function App() {
           <p className="text-lg text-indigo-200/80 max-w-xl font-light">
             Can a monkey <a href="https://www.bayes.citystgeorges.ac.uk/__data/assets/pdf_file/0005/168827/Monkeys-beat-market-cap-indices_Final030413.pdf" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 underline font-medium">throwing darts</a> consistently beat Wall Street? Track the results of a completely random daily stock selection.
           </p>
+
+          <nav className="flex items-center gap-2 mt-8 p-1.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-indigo-500 text-white shadow-lg' : 'text-indigo-200/60 hover:text-white hover:bg-white/5'}`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('methodology')}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-all duration-300 ${activeTab === 'methodology' ? 'bg-indigo-500 text-white shadow-lg' : 'text-indigo-200/60 hover:text-white hover:bg-white/5'}`}
+            >
+              <Info className="w-4 h-4" />
+              Methodology
+            </button>
+          </nav>
         </header>
 
+        {activeTab === 'dashboard' ? (
+          <div className="animate-in fade-in duration-500">
         {/* Top Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           
@@ -251,6 +323,10 @@ function App() {
             </table>
           </div>
         </section>
+        </div>
+        ) : (
+          <Methodology />
+        )}
 
         {/* Disclaimer Footer */}
         <footer className="mt-12 text-center text-xs text-indigo-200/40 pb-8 px-6 max-w-3xl mx-auto leading-relaxed">
