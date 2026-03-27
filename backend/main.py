@@ -60,7 +60,13 @@ def generate_pick(request):
                 continue
                 
             try:
-                hist = yf.Ticker(candidate).history(period="1d")
+                ticker_obj = yf.Ticker(candidate)
+                info = ticker_obj.info
+                # Ensure it's a regular equity
+                if info.get('quoteType') != 'EQUITY':
+                    continue
+                    
+                hist = ticker_obj.history(period="1d")
                 if not hist.empty and len(hist) > 0:
                     # Verify Tiingo actually has a price for it right now
                     pricing = client.get_ticker_price(candidate)
