@@ -59,11 +59,19 @@ def generate_pick(request):
             if candidate in past_picks:
                 continue
                 
+            # Ensure strict formatting: only letters and reasonable length
+            if not candidate.isalpha() or len(candidate) > 5:
+                continue
+                
             try:
                 ticker_obj = yf.Ticker(candidate)
                 info = ticker_obj.info
                 # Ensure it's a regular equity
                 if info.get('quoteType') != 'EQUITY':
+                    continue
+                    
+                # Ensure it has sufficient trading volume (avoid illiquid/dead stonks)
+                if info.get('regularMarketVolume', 0) < 50000:
                     continue
                     
                 hist = ticker_obj.history(period="1d")
