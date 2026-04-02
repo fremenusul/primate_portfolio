@@ -71,7 +71,7 @@ def generate_pick(request):
                     continue
                     
                 # Ensure it has sufficient trading volume (avoid illiquid/dead stonks)
-                if info.get('regularMarketVolume', 0) < 50000:
+                if (info.get('regularMarketVolume') or 0) < 50000:
                     continue
                     
                 hist = ticker_obj.history(period="1d")
