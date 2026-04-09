@@ -1,5 +1,6 @@
 import os
 import datetime
+import zoneinfo
 import random
 from google.cloud import firestore
 from tiingo import TiingoClient
@@ -27,7 +28,7 @@ def download_supported_tickers():
 
 def fix_today_pick():
     print("Checking today's pick...")
-    today_str = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+    today_str = datetime.datetime.now(zoneinfo.ZoneInfo('America/Los_Angeles')).strftime('%Y-%m-%d')
     picks_ref = db.collection('daily_picks').document(today_str)
     doc = picks_ref.get()
     
@@ -43,7 +44,7 @@ def fix_today_pick():
                 if info.get('quoteType') != 'EQUITY':
                     print(f"Current pick {current_pick} is NOT an equity (quoteType: {info.get('quoteType')}). Needs fix.")
                     needs_fix = True
-                elif (info.get('regularMarketVolume') or 0) < 50000:
+                elif (info.get('averageVolume') or info.get('regularMarketVolume') or 0) < 2000000:
                     print(f"Current pick {current_pick} has insufficient volume. Needs fix.")
                     needs_fix = True
                 else:
@@ -83,7 +84,7 @@ def fix_today_pick():
             info = ticker_obj.info
             if info.get('quoteType') != 'EQUITY':
                 continue
-            if (info.get('regularMarketVolume') or 0) < 50000:
+            if (info.get('averageVolume') or info.get('regularMarketVolume') or 0) < 2000000:
                 continue
             hist = ticker_obj.history(period="1d")
             if not hist.empty:

@@ -4,6 +4,7 @@ import random
 import zipfile
 import io
 import datetime
+import zoneinfo
 import requests
 import functions_framework
 from google.cloud import firestore
@@ -71,7 +72,8 @@ def generate_pick(request):
                     continue
                     
                 # Ensure it has sufficient trading volume (avoid illiquid/dead stonks)
-                if (info.get('regularMarketVolume') or 0) < 50000:
+                vol = info.get('averageVolume') or info.get('regularMarketVolume') or 0
+                if vol < 2000000:
                     continue
                     
                 hist = ticker_obj.history(period="1d")
@@ -95,7 +97,7 @@ def generate_pick(request):
         if pricing:
             pick_price = pricing[0].get('close')
         
-        today_str = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+        today_str = datetime.datetime.now(zoneinfo.ZoneInfo('America/Los_Angeles')).strftime('%Y-%m-%d')
         
         # Store in Firestore
         doc_ref = db.collection('daily_picks').document(today_str)
@@ -167,7 +169,7 @@ def update_performance(request):
                      update_data['total_return_pct'] = roi_pct
                 
                 # Append to history array
-                today_str = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+                today_str = datetime.datetime.now(zoneinfo.ZoneInfo('America/Los_Angeles')).strftime('%Y-%m-%d')
                 update_data['history'] = firestore.ArrayUnion([{'date': today_str, 'return_pct': roi_pct}])
 
                 doc.reference.update(update_data)
