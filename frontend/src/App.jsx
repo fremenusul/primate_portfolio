@@ -222,9 +222,6 @@ function App() {
         <section className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden mt-8">
           <div className="px-8 py-6 border-b border-white/10 bg-white/5 flex items-center justify-between">
             <h2 className="font-semibold text-xl text-white tracking-wide">Historical Picks Ledger</h2>
-            <div className="text-xs font-medium px-3 py-1 rounded-full bg-white/10 text-indigo-200 uppercase tracking-widest">
-              Live Data
-            </div>
           </div>
           
           <div className="overflow-x-auto">
